@@ -28,7 +28,7 @@ CREATE TABLE stores (
     city VARCHAR(100) NOT NULL,
     region VARCHAR(100) NOT NULL,
     manager_employee_id INT UNSIGNED NULL,
-    opening_date DATE NOT NULL CHECK (opening_date <= CURRENT_DATE),
+    opening_date DATE NOT NULL,
     CONSTRAINT pk_stores PRIMARY KEY (store_id)
 );
 
@@ -76,7 +76,6 @@ CREATE TABLE products (
     brand VARCHAR(50) NOT NULL,
     unit_price DECIMAL(10, 2) NOT NULL CHECK (unit_price >= 0),
     supplier_id INT UNSIGNED NOT NULL,
-    loyalty_point_value INT UNSIGNED NOT NULL DEFAULT 0,
 
     CONSTRAINT pk_products PRIMARY KEY (product_id),
 
@@ -98,6 +97,8 @@ CREATE TABLE purchases (
     purchase_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     total_amount DECIMAL(10, 2) NOT NULL CHECK (total_amount >= 0),
     employee_id INT UNSIGNED NOT NULL,
+    overall_promotion_value DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (overall_promotion_value >= 0),
+
     CONSTRAINT pk_purchases PRIMARY KEY (purchase_id),
 
     CONSTRAINT fk_purchases_customer 
@@ -119,7 +120,7 @@ CREATE TABLE purchase_items (
     product_id INT UNSIGNED NOT NULL,
     quantity INT UNSIGNED NOT NULL CHECK (quantity > 0),
     unit_price DECIMAL(10, 2) NOT NULL CHECK (unit_price >= 0),
-    loyalty_point_value INT UNSIGNED NOT NULL DEFAULT 0,
+    promotion_value DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (promotion_value >= 0),
 
     CONSTRAINT pk_purchase_items PRIMARY KEY (purchase_item_id),
 
@@ -136,7 +137,7 @@ CREATE TABLE inventory (
     inventory_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     store_id INT UNSIGNED NOT NULL,
     product_id INT UNSIGNED NOT NULL,
-    quantity INT UNSIGNED NOT NULL,
+    quantity INT UNSIGNED NOT NULL CHECK (quantity >= 0),
     last_restocked DATE NOT NULL,
 
     CONSTRAINT pk_inventory PRIMARY KEY (inventory_id),
@@ -152,10 +153,18 @@ CREATE TABLE inventory (
     CONSTRAINT uq_inventory_store_product UNIQUE (store_id, product_id)
 );
 
+CREATE TABLE action_types (
+    action_type_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    action_type_name VARCHAR(50) NOT NULL,
+
+    CONSTRAINT pk_action_types PRIMARY KEY (action_type_id),
+    CONSTRAINT uq_action_types_name UNIQUE (action_type_name)
+);
+
 CREATE TABLE employee_actions (
     action_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     employee_id INT UNSIGNED NOT NULL,
-    action_type VARCHAR(50) NOT NULL,
+    action_type_id INT UNSIGNED NOT NULL,
     action_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     target_table VARCHAR(50) NOT NULL,
     target_id INT UNSIGNED NOT NULL,
@@ -163,8 +172,12 @@ CREATE TABLE employee_actions (
     CONSTRAINT pk_employee_actions PRIMARY KEY (action_id),
 
     CONSTRAINT fk_employee_actions_employee
-    FOREIGN KEY (employee_id)
-    REFERENCES employees (employee_id)
+        FOREIGN KEY (employee_id)
+        REFERENCES employees (employee_id),
+
+    CONSTRAINT fk_employee_actions_action_type
+        FOREIGN KEY (action_type_id)
+        REFERENCES action_types (action_type_id)
 );
 
 CREATE TABLE promotions (
