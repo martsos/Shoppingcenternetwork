@@ -16,17 +16,14 @@ CREATE INDEX idx_purchases_store_time
 CREATE INDEX idx_purchases_customer_time
     ON purchases (customer_id, purchase_time);
 
-CREATE INDEX idx_purchases_employee_id
-    ON purchases (employee_id);
+CREATE INDEX idx_purchases_employee_time
+    ON purchases (employee_id, purchase_time);
 
 CREATE INDEX idx_purchase_items_purchase_id
     ON purchase_items (purchase_id);
 
 CREATE INDEX idx_purchase_items_product_id
     ON purchase_items (product_id);
-
-CREATE INDEX idx_inventory_product_id
-    ON inventory (product_id);
 
 CREATE INDEX idx_employee_actions_employee_id
     ON employee_actions (employee_id);
@@ -39,3 +36,6 @@ CREATE INDEX idx_employee_actions_target
 
 CREATE INDEX idx_promotions_product_dates
     ON promotions (product_id, start_date, end_date);
+
+CREATE INDEX idx_purchases_time
+    ON purchases (purchase_time);
